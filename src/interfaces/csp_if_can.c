@@ -78,7 +78,7 @@ int csp_can_rx(csp_iface_t *interface, uint32_t id, const uint8_t *data, uint8_t
 #endif
 
 	/* Bind incoming frame to a packet buffer */
-	buf = csp_can_pbuf_find(id, CFP_ID_CONN_MASK);
+	buf = csp_can_pbuf_find(id, CFP_ID_CONN_MASK, task_woken);
 
 	/* Check returned buffer */
 	if (buf == NULL) {
