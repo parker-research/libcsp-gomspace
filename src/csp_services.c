@@ -207,17 +207,26 @@ void csp_buf_free(uint8_t node, uint32_t timeout) {
 
 }
 
+int csp_get_uptime(uint8_t node, uint32_t timeout, uint32_t * uptime) {
+
+	int status = csp_transaction(CSP_PRIO_NORM, node, CSP_UPTIME, timeout, NULL, 0, uptime, sizeof(*uptime));
+	if (status == sizeof(*uptime)) {
+		*uptime = csp_ntoh32(*uptime);
+		return CSP_ERR_NONE;
+	}
+	*uptime = 0;
+	return CSP_ERR_TIMEDOUT;
+}
+
 void csp_uptime(uint8_t node, uint32_t timeout) {
 
-	uint32_t uptime = 0;
-
-	int status = csp_transaction(CSP_PRIO_NORM, node, CSP_UPTIME, timeout, NULL, 0, &uptime, sizeof(uptime));
-	if (status == 0) {
+	uint32_t uptime;
+	int err = csp_get_uptime(node, timeout, &uptime);
+	if (err == CSP_ERR_NONE) {
+		printf("Uptime of node %u is %"PRIu32" s\r\n", (unsigned int) node, uptime);
+	} else {
 		printf("Network error\r\n");
-		return;
 	}
-	uptime = csp_ntoh32(uptime);
-	printf("Uptime of node %u is %"PRIu32" s\r\n", (unsigned int) node, uptime);
 
 }
 

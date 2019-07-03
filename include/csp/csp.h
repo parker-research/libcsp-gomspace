@@ -464,6 +464,15 @@ void csp_shutdown(uint8_t node);
 void csp_uptime(uint8_t node, uint32_t timeout);
 
 /**
+ * Request subsystem uptime
+ * @param[in] node node id
+ * @param[in] timeout timeout in ms
+ * @param[out] uptime uptime in seconds.
+ * @return #CSP_ERR_NONE on success, otherwise an error code.
+ */
+int csp_get_uptime(uint8_t node, uint32_t timeout, uint32_t * uptime);
+
+/**
  * Set RDP options
  * @param window_size Window size
  * @param conn_timeout_ms Connection timeout in ms
