@@ -20,16 +20,21 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef _CSP_ERROR_H_
 #define _CSP_ERROR_H_
+
 /**
    @file
 
-   CSP error codes.
+   Error codes.
 */
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+   @defgroup CSP_ERR CSP error codes.
+   @{
+*/
 #define CSP_ERR_NONE		 0		/**< No error */
 #define CSP_ERR_NOMEM		-1		/**< Not enough memory */
 #define CSP_ERR_INVAL		-2		/**< Invalid argument */
@@ -43,13 +48,13 @@ extern "C" {
 #define CSP_ERR_TX		-10		/**< Transmission failed */
 #define CSP_ERR_DRIVER		-11		/**< Error in driver layer */
 #define CSP_ERR_AGAIN		-12		/**< Resource temporarily unavailable */
-
 #define CSP_ERR_HMAC		-100		/**< HMAC failed */
 #define CSP_ERR_XTEA		-101		/**< XTEA failed */
 #define CSP_ERR_CRC32		-102		/**< CRC32 failed */
+#define CSP_ERR_SFP		-103		/**< SFP protocol error or inconsistency */
+/**@}*/
 
 #ifdef __cplusplus
-} /* extern "C" */
+}
 #endif
-
-#endif // _CSP_ERROR_H_
+#endif
