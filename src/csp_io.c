@@ -43,6 +43,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "csp_qfifo.h"
 #include "transport/csp_transport.h"
 
+extern csp_manipulator_t csp_packet_manipulator;
+
 #if (CSP_USE_PROMISC)
 extern csp_queue_handle_t csp_promisc_queue;
 #endif
@@ -172,6 +174,16 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 		goto err;
 	}
 
+	extern uint8_t crypto_gw_addr;
+	extern uint8_t crypto_split_addr;
+	if (crypto_gw_addr > 0) {
+		if (packet->id.src == csp_get_address() && packet->id.dst > crypto_split_addr && !(packet->id.flags & CSP_CRYPTO_AES256)) {
+			// If the packet is from me to the encrypted segment and it is not encrypted force it to the gw
+			ifroute = csp_rtable_find_route(crypto_gw_addr);
+			csp_log_packet("Re-routing to encryptor");
+		}
+	}
+
 	if (ifroute == NULL) {
 		csp_log_error("No route to host: %u (0x%08"PRIx32")", idout.dst, idout.ext);
 		goto err;
@@ -181,6 +193,13 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 
 	csp_log_packet("OUT: S %u, D %u, Dp %u, Sp %u, Pr %u, Fl 0x%02X, Sz %u VIA: %s (%u)",
                        idout.src, idout.dst, idout.dport, idout.sport, idout.pri, idout.flags, packet->length, ifout->name, (ifroute->via != CSP_NO_VIA_ADDRESS) ? ifroute->via : idout.dst);
+
+	// This is called from router or during send.
+	// Packets at this point may be encrypted or raw
+	// Call encrypt function here
+	// If the packet is routed (i.e. has CRC then the CRC must be replaced???)
+	// or should the enc/dec function be called after the CRC operation? (below)
+	// ... and then encapsulate the CRC inside the encrypted data? (that would actually work...)
 
 	/* Copy identifier to packet (before crc, xtea and hmac) */
 	packet->id.ext = idout.ext;
@@ -238,6 +257,10 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 			goto tx_err;
 #endif
 		}
+	}
+
+	if (csp_packet_manipulator) {
+		csp_packet_manipulator(packet);
 	}
 
 	/* Store length before passing to interface */
