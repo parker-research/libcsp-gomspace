@@ -268,8 +268,7 @@ int csp_route_work(uint32_t timeout) {
 	/* The message is to me, search for incoming socket */
 	socket = csp_port_get_socket(packet->id.dport);
 
-	/** ADDED */
-	// CALL DECRYPT (if we are the OBC / crypto node)
+	/* If set, call the csp packet manipulator (encryption/decryption) */
 	if (csp_packet_manipulator) {
 		csp_packet_manipulator(packet);
 	}

@@ -259,6 +259,7 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 		}
 	}
 
+	/* If set, call the csp packet manipulator (encryption/decryption) */
 	if (csp_packet_manipulator) {
 		csp_packet_manipulator(packet);
 	}
