@@ -286,6 +286,9 @@ typedef csp_memptr_t (*csp_memcpy_fnc_t)(csp_memptr_t, csp_const_memptr_t, size_
 */
 #define CSP_STATIC_ASSERT(condition, name)   typedef char name[(condition) ? 1 : -1]
 
+/**
+   For use with CSP encryption.
+*/
 #define CSP_CRYPTO_AES256 CSP_FRES3
 typedef int (*csp_manipulator_t)(csp_packet_t* packet);
 void csp_set_manipulator_gateway(uint8_t gw_address, uint8_t split_addr);

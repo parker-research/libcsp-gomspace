@@ -177,8 +177,8 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 	extern uint8_t crypto_gw_addr;
 	extern uint8_t crypto_split_addr;
 	if (crypto_gw_addr > 0) {
+		// If the packet is from me to the encrypted segment and it is not encrypted, force it to the gateway
 		if (packet->id.src == csp_get_address() && packet->id.dst > crypto_split_addr && !(packet->id.flags & CSP_CRYPTO_AES256)) {
-			// If the packet is from me to the encrypted segment and it is not encrypted force it to the gw
 			ifroute = csp_rtable_find_route(crypto_gw_addr);
 			csp_log_packet("Re-routing to encryptor");
 		}
@@ -258,6 +258,7 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 #endif
 		}
 	}
+
 
 	/* If set, call the csp packet manipulator (encryption/decryption) */
 	if (csp_packet_manipulator) {

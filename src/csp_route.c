@@ -219,17 +219,15 @@ int csp_route_work(uint32_t timeout) {
 	input.iface->rx++;
 	input.iface->rxbytes += packet->length;
 
-	// ADDED
 	bool forced_routing = false;
 	if (crypto_gw_addr > 0) {
+		// If the packet is for me and it is encrypted, force it to be routed
 		if (packet->id.dst == csp_conf.address && (packet->id.flags & CSP_CRYPTO_AES256)) {
-			// If the packet is for me and it is encrypted, force it to be routed
 			forced_routing = true;
 		}
 	}
 
 	/* If the message is not to me, route the message to the correct interface */
-	// if ((packet->id.dst != csp_conf.address) && (packet->id.dst != CSP_BROADCAST_ADDR)) {
 	if (forced_routing || ((packet->id.dst != csp_conf.address) && (packet->id.dst != CSP_BROADCAST_ADDR))) {
 
 		/* Find the destination interface */
@@ -272,7 +270,6 @@ int csp_route_work(uint32_t timeout) {
 	if (csp_packet_manipulator) {
 		csp_packet_manipulator(packet);
 	}
-    /***/
 
 	/* If the socket is connection-less, deliver now */
 	if (socket && (socket->opts & CSP_SO_CONN_LESS)) {
