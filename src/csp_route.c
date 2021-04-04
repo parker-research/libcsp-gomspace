@@ -241,8 +241,24 @@ int csp_route_work(uint32_t timeout) {
         }
         const csp_route_t * ifroute = csp_rtable_find_route(csp_addr);
 
+        // If we are a gateway and the packet crosses the split boundary, then allow loop back
+        bool loop_back = true;
+        if ((packet->id.dst > crypto_split_addr) && (packet->id.src > crypto_split_addr)) {
+            loop_back = false;
+        }
+        else if ((packet->id.dst <= crypto_split_addr) && (packet->id.src <= crypto_split_addr)) {
+            loop_back = false;
+        }
+        else {
+            loop_back = true;
+        }
+
+	    if ((csp_packet_manipulator == NULL) && (input.iface->split_horizon_off == 0)) {
+            loop_back = false;
+        }
+
 		/* If the message resolves to the input interface, don't loop it back out */
-		if ((ifroute == NULL) || ((ifroute->iface == input.iface) && (input.iface->split_horizon_off == 0))) {
+		if ((ifroute == NULL) || ((ifroute->iface == input.iface) && !loop_back)) {
 			csp_buffer_free(packet);
 			return CSP_ERR_NONE;
 		}
@@ -266,10 +282,15 @@ int csp_route_work(uint32_t timeout) {
 	/* The message is to me, search for incoming socket */
 	socket = csp_port_get_socket(packet->id.dport);
 
-	/* If set, call the csp packet manipulator (encryption/decryption) */
-	if (csp_packet_manipulator) {
-		csp_packet_manipulator(packet);
-	}
+    /* If set, call the csp packet manipulator (encryption/decryption) */
+    if (csp_packet_manipulator) {
+        /* Discard packages that can not be encrypted/decrypted */
+        if (csp_packet_manipulator(packet) != CSP_ERR_NONE) {
+            csp_log_warn("Package could not be encrypted/decrypted");
+            csp_buffer_free(packet);
+            return CSP_ERR_NONE;
+        }
+    }
 
 	/* If the socket is connection-less, deliver now */
 	if (socket && (socket->opts & CSP_SO_CONN_LESS)) {

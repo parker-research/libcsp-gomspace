@@ -260,10 +260,15 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 	}
 
 
-	/* If set, call the csp packet manipulator (encryption/decryption) */
-	if (csp_packet_manipulator) {
-		csp_packet_manipulator(packet);
-	}
+    /* If set, call the csp packet manipulator (encryption/decryption) */
+    if (csp_packet_manipulator) {
+        /* Discard packages that can not be encrypted/decrypted */
+        if (csp_packet_manipulator(packet) != CSP_ERR_NONE) {
+            csp_log_warn("Package could not be encrypted/decrypted");
+            csp_buffer_free(packet);
+            return CSP_ERR_NONE;
+        }
+    }
 
 	/* Store length before passing to interface */
 	uint16_t bytes = packet->length;
