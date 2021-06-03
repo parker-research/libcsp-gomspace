@@ -38,14 +38,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "csp_dedup.h"
 #include "transport/csp_transport.h"
 
-/** ADDED */
-uint8_t crypto_gw_addr = 0;       // Set from outside /config
+uint8_t crypto_gw_addr = 0;
 uint8_t crypto_split_addr = 15;
 
 void csp_set_manipulator_gateway(uint8_t gw_address, uint8_t split_addr) 
 {
 	if (crypto_gw_addr < 30 && split_addr < 30 && crypto_gw_addr < split_addr) {
-		crypto_gw_addr = crypto_gw_addr;
+		crypto_gw_addr = gw_address;
 		crypto_split_addr = split_addr;
 	}
 }
@@ -55,7 +54,6 @@ void csp_set_packet_manipulator(csp_manipulator_t func_ptr)
 {
 	csp_packet_manipulator = func_ptr;
 }
-/***/
 
 /**
  * Check supported packet options

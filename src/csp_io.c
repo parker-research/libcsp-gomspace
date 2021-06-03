@@ -194,13 +194,6 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 	csp_log_packet("OUT: S %u, D %u, Dp %u, Sp %u, Pr %u, Fl 0x%02X, Sz %u VIA: %s (%u)",
                        idout.src, idout.dst, idout.dport, idout.sport, idout.pri, idout.flags, packet->length, ifout->name, (ifroute->via != CSP_NO_VIA_ADDRESS) ? ifroute->via : idout.dst);
 
-	// This is called from router or during send.
-	// Packets at this point may be encrypted or raw
-	// Call encrypt function here
-	// If the packet is routed (i.e. has CRC then the CRC must be replaced???)
-	// or should the enc/dec function be called after the CRC operation? (below)
-	// ... and then encapsulate the CRC inside the encrypted data? (that would actually work...)
-
 	/* Copy identifier to packet (before crc, xtea and hmac) */
 	packet->id.ext = idout.ext;
 
