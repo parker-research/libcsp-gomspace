@@ -247,9 +247,6 @@ int csp_route_work(uint32_t timeout) {
         else if ((packet->id.dst <= crypto_split_addr) && (packet->id.src <= crypto_split_addr)) {
             loop_back = false;
         }
-        else {
-            loop_back = true;
-        }
 
 	    if ((csp_packet_manipulator == NULL) && (input.iface->split_horizon_off == 0)) {
             loop_back = false;
