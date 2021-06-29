@@ -178,7 +178,7 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 	extern uint8_t crypto_split_addr;
 	if (crypto_gw_addr > 0) {
 		// If the packet is from me to the encrypted segment and it is not encrypted, force it to the gateway
-		if (packet->id.src == csp_get_address() && packet->id.dst > crypto_split_addr && !(packet->id.flags & CSP_CRYPTO_AES256)) {
+		if (idout.src == csp_get_address() && idout.dst > crypto_split_addr && !(idout.flags & CSP_CRYPTO_AES256)) {
 			ifroute = csp_rtable_find_route(crypto_gw_addr);
 			csp_log_packet("Re-routing to encryptor");
 		}
@@ -206,7 +206,7 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 #endif
 
 	/* Only encrypt packets from the current node */
-	if (idout.src == csp_conf.address) {
+	if (idout.src == csp_conf.address && !(idout.flags & CSP_CRYPTO_AES256)) {
 		/* Append HMAC */
 		if (idout.flags & CSP_FHMAC) {
 #if (CSP_USE_HMAC)
