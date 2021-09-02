@@ -244,7 +244,8 @@ typedef struct {
    The overhead is the difference between the total buffer size (returned by csp_buffer_size()) and the data part
    of the #csp_packet_t (returned by csp_buffer_data_size()).
 */
-#define CSP_BUFFER_PACKET_OVERHEAD      (sizeof(csp_packet_t) - sizeof(((csp_packet_t *)0)->data))
+#define CSP_BUFFER_PACKET_OVERHEAD      ((sizeof(csp_packet_t) - sizeof(((csp_packet_t *)0)->data))+28) /* Add 28 bytes overhead for CSP encryption*/
+//#define CSP_BUFFER_PACKET_OVERHEAD      (sizeof(csp_packet_t) - sizeof(((csp_packet_t *)0)->data))
 
 /** Forward declaration of CSP interface, see #csp_iface_s for details. */
 typedef struct csp_iface_s csp_iface_t;
