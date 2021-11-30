@@ -43,8 +43,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "csp_qfifo.h"
 #include "transport/csp_transport.h"
 
-extern csp_manipulator_t csp_packet_manipulator;
-
 #if (CSP_USE_PROMISC)
 extern csp_queue_handle_t csp_promisc_queue;
 #endif
@@ -174,16 +172,6 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 		goto err;
 	}
 
-	extern uint8_t crypto_gw_addr;
-	extern uint8_t crypto_split_addr;
-	if (crypto_gw_addr > 0) {
-		// If the packet is from me to the encrypted segment and it is not encrypted, force it to the gateway
-		if (idout.src == csp_get_address() && idout.dst > crypto_split_addr && !(idout.flags & CSP_CRYPTO_AES256)) {
-			ifroute = csp_rtable_find_route(crypto_gw_addr);
-			csp_log_packet("Re-routing to encryptor");
-		}
-	}
-
 	if (ifroute == NULL) {
 		csp_log_error("No route to host: %u (0x%08"PRIx32")", idout.dst, idout.ext);
 		goto err;
@@ -206,7 +194,7 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 #endif
 
 	/* Only encrypt packets from the current node */
-	if (idout.src == csp_conf.address && !(idout.flags & CSP_CRYPTO_AES256)) {
+	if (idout.src == csp_conf.address) {
 		/* Append HMAC */
 		if (idout.flags & CSP_FHMAC) {
 #if (CSP_USE_HMAC)
@@ -251,16 +239,6 @@ int csp_send_direct(csp_id_t idout, csp_packet_t * packet, const csp_route_t * i
 #endif
 		}
 	}
-
-
-    /* If set, call the csp packet manipulator (encryption/decryption) */
-    if (csp_packet_manipulator) {
-        /* Discard packages that can not be encrypted/decrypted */
-        if (csp_packet_manipulator(packet) != CSP_ERR_NONE) {
-            csp_buffer_free(packet);
-            return CSP_ERR_NONE;
-        }
-    }
 
 	/* Store length before passing to interface */
 	uint16_t bytes = packet->length;

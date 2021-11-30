@@ -285,27 +285,6 @@ typedef csp_memptr_t (*csp_memcpy_fnc_t)(csp_memptr_t, csp_const_memptr_t, size_
    Compile check/asserts.
 */
 #define CSP_STATIC_ASSERT(condition, name)   typedef char name[(condition) ? 1 : -1]
-
-/**
-   Flag to indicate encryption.
-*/
-#define CSP_CRYPTO_AES256 CSP_FRES3
-
-/** Forward declaration of CSP manipulator function */ 
-typedef int (*csp_manipulator_t)(csp_packet_t* packet);
-
-/**
-   Initialize CSP encryption
-   @param[in] gw_address encryption gateway CSP address.
-   @param[in] split_addr split CSP address between encrypted and non-encrypted segment.
-*/
-void csp_set_manipulator_gateway(uint8_t gw_address, uint8_t split_addr);
-
-/**
-   Set CSP manipulator function
-   @param[in] func_ptr pointer to CSP manipulator function.
-*/
-void csp_set_packet_manipulator(csp_manipulator_t func_ptr);
     
 #ifdef __cplusplus
 }

@@ -38,23 +38,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "csp_dedup.h"
 #include "transport/csp_transport.h"
 
-uint8_t crypto_gw_addr = 0;
-uint8_t crypto_split_addr = 15;
-
-void csp_set_manipulator_gateway(uint8_t gw_address, uint8_t split_addr) 
-{
-	if (crypto_gw_addr < 30 && split_addr < 30 && crypto_gw_addr < split_addr) {
-		crypto_gw_addr = gw_address;
-		crypto_split_addr = split_addr;
-	}
-}
-
-csp_manipulator_t csp_packet_manipulator = NULL;
-void csp_set_packet_manipulator(csp_manipulator_t func_ptr)
-{
-	csp_packet_manipulator = func_ptr;
-}
-
 /**
  * Check supported packet options
  * @param iface pointer to incoming interface
@@ -217,43 +200,14 @@ int csp_route_work(uint32_t timeout) {
 	input.iface->rx++;
 	input.iface->rxbytes += packet->length;
 
-	bool forced_routing = false;
-	if (crypto_gw_addr > 0) {
-		// If the packet is for me and it is encrypted, force it to be routed
-		if (packet->id.dst == csp_conf.address && (packet->id.flags & CSP_CRYPTO_AES256)) {
-			forced_routing = true;
-		}
-	}
-
 	/* If the message is not to me, route the message to the correct interface */
-	if (forced_routing || ((packet->id.dst != csp_conf.address) && (packet->id.dst != CSP_BROADCAST_ADDR))) {
+	if ((packet->id.dst != csp_conf.address) && (packet->id.dst != CSP_BROADCAST_ADDR)) {
 
 		/* Find the destination interface */
-        uint8_t csp_addr;
-		if (forced_routing) {
-            csp_addr = crypto_gw_addr;
-			csp_log_packet("Re-routing to decryptor");
-        }
-        else {
-            csp_addr = packet->id.dst;
-        }
-        const csp_route_t * ifroute = csp_rtable_find_route(csp_addr);
-
-        // If we are a gateway and the packet crosses the split boundary, then allow loop back
-        bool loop_back = true;
-        if ((packet->id.dst > crypto_split_addr) && (packet->id.src > crypto_split_addr)) {
-            loop_back = false;
-        }
-        else if ((packet->id.dst <= crypto_split_addr) && (packet->id.src <= crypto_split_addr)) {
-            loop_back = false;
-        }
-
-	    if ((csp_packet_manipulator == NULL) && (input.iface->split_horizon_off == 0)) {
-            loop_back = false;
-        }
+		const csp_route_t * ifroute = csp_rtable_find_route(packet->id.dst);
 
 		/* If the message resolves to the input interface, don't loop it back out */
-		if ((ifroute == NULL) || ((ifroute->iface == input.iface) && !loop_back)) {
+		if ((ifroute == NULL) || ((ifroute->iface == input.iface) && (input.iface->split_horizon_off == 0))) {
 			csp_buffer_free(packet);
 			return CSP_ERR_NONE;
 		}
@@ -276,15 +230,6 @@ int csp_route_work(uint32_t timeout) {
 
 	/* The message is to me, search for incoming socket */
 	socket = csp_port_get_socket(packet->id.dport);
-
-    /* If set, call the csp packet manipulator (encryption/decryption) */
-    if (csp_packet_manipulator) {
-        /* Discard packages that can not be encrypted/decrypted */
-        if (csp_packet_manipulator(packet) != CSP_ERR_NONE) {
-            csp_buffer_free(packet);
-            return CSP_ERR_NONE;
-        }
-    }
 
 	/* If the socket is connection-less, deliver now */
 	if (socket && (socket->opts & CSP_SO_CONN_LESS)) {

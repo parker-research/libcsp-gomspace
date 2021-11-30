@@ -2,7 +2,6 @@ libcsp (GomSpace)
 -----------------
 - Use GomSpace log system instead of libcsp.
 - ZMQHUB, transfer 'via' information between zmqproxies.
-- Add functions to support CSP encryption
 
 libcsp 1.6, 16-04-2020
 ----------------------
