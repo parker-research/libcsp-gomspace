@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <csp/drivers/usart.h>
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -205,7 +206,7 @@ int csp_usart_open(const csp_usart_conf_t *conf, csp_usart_callback_t rx_callbac
 		case 4000000: brate=B4000000; break;
 #endif
 		default:
-			csp_log_error("%s: Unsupported baudrate: %u", __FUNCTION__, conf->baudrate);
+			csp_log_error("%s: Unsupported baudrate: %"PRIu32, __FUNCTION__, conf->baudrate);
 			return CSP_ERR_INVAL;
 	}
 
