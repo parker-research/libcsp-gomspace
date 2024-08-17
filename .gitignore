@@ -17,3 +17,5 @@ tags
 *.pdf
 *.html
 .vscode/
+venv/
+__pycache__/
